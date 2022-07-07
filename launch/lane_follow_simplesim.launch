@@ -3,8 +3,8 @@
 <launch>
 
   <!-- load the map -->
-  <param name="map_dir" value="$(find simple_sim_h_course)/map" />
-  <rosparam command="load" file="$(find simple_sim_h_course)/map/h_course.yaml" />
+  <param name="map_dir" value="$(find fictitious_line_sim)/map" />
+  <rosparam command="load" file="$(find fictitious_line_sim)/map/h_course.yaml" />
 
   <!-- load the robot -->
   <rosparam command="load" file="$(find simple_sim_circleroad)/robot/ackermann.yaml" />

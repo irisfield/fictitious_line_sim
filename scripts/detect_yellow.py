@@ -22,7 +22,6 @@ def dynamic_reconfigure_callback(config, level):
     return config
 
 def image_callback(camera_image):
-    global height, width
     try:
         cv_image = CvBridge().imgmsg_to_cv2(camera_image, "bgr8")
     except CvBridgeError:
@@ -64,7 +63,6 @@ def image_callback(camera_image):
 
     yellow_detected_pub.publish(yellow_detected)
 
-    # cv2.imshow("Yellow Line Detected", image_mask)
     cv2.waitKey(3)
 
 ################### main ###################

@@ -26,7 +26,7 @@ def image_callback(camera_image):
         cv_image = CvBridge().imgmsg_to_cv2(camera_image, "bgr8")
     except CvBridgeError:
         print(CvBridgeError)
-        
+
     width = cv_image.shape[0]
     height = cv_image.shape[1]
 
@@ -151,8 +151,8 @@ def drive_2_follow_line(cv_image, cx, cy, cols): # algorithm 1
       yaw_rate.data = 0.1
     else:
       #cv2.putText(cv_image,f"Go Stright", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = 0.0 
-    
+      yaw_rate.data = 0.0
+
     yaw_rate_pub.publish(yaw_rate)
 
 def pub_yaw_rate(cv_image, cx, cy, width, height):

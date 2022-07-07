@@ -30,9 +30,4 @@
       <param name="camera_topic_name" type="str" value="camera_view" />
   </node>
 
-  <!-- launch the speed monitor node -->
-  <node pkg="fictitious_line_sim" name="speed_monitor" type="speed_monitor.py" required="true" output="screen" >
-      <param name="camera_topic_name" type="str" value="camera_view" />
-  </node>
-
 </launch>

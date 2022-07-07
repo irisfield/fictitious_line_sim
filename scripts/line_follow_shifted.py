@@ -155,6 +155,8 @@ def drive_2_follow_line(cv_image, cx, cy, cols): # algorithm 1
 
     yaw_rate_pub.publish(yaw_rate)
 
+    return
+
 def pub_yaw_rate(cv_image, cx, cy, width, height):
 
     # compute the coordinates for the center the vehicle's camera view

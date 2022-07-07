@@ -9,6 +9,7 @@ from fictitious_line_sim.cfg import ControlUnitConfig
 
 # global variables
 vel_msg = Twist()
+yaw_rate = 0.0
 
 # since the car starts at the yellow line, drive the first curve
 drive_curve = True
@@ -82,8 +83,6 @@ if __name__ == "__main__":
 
     rospy.Subscriber("yellow_detected", Bool, detect_yellow_callback)
     rospy.Subscriber("yaw_rate", Float32, yaw_rate_callback)
-
-    cmd_vel_pub = rospy.Publisher("/vehicle/cmd_vel", Twist, queue_size=1)
 
     cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 

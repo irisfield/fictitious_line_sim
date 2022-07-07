@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- load the map -->
+  <param name="map_dir" value="$(find simple_sim_h_course)/map" />
+  <rosparam command="load" file="$(find simple_sim_h_course)/map/h_course.yaml" />
+
+  <!-- load the robot -->
+  <rosparam command="load" file="$(find simple_sim_circleroad)/robot/ackermann.yaml" />
+
+  <!-- launch the simulator -->
+  <include file="$(find simple_sim)/launch/simple_sim.launch">
+    <arg name="show_rviz" value="false" />
+    <arg name="show_kb_teleop" value="false" />
+  </include>
+
+  <!-- launch the yellow line detection node -->
+  <node pkg="fictitious_line_sim" name="detect_yellow" type="detect_yellow.py" required="true" output="screen" >
+      <param name="camera_topic_name" type="str" value="camera_view" />
+  </node>
+
+  <!-- launch the control unit node -->
+  <node pkg="fictitious_line_sim" name="control_unit" type="control_unit.py" required="true" output="screen" >
+      <param name="camera_topic_name" type="str" value="camera_view" />
+  </node>
+
+  <!-- launch the line follow node -->
+  <node pkg="fictitious_line_sim" name="line_follow_shifted" type="line_follow_shifted.py" required="true" output="screen" >
+      <param name="camera_topic_name" type="str" value="camera_view" />
+  </node>
+
+  <!-- launch the speed monitor node -->
+  <node pkg="fictitious_line_sim" name="speed_monitor" type="speed_monitor.py" required="true" output="screen" >
+      <param name="camera_topic_name" type="str" value="camera_view" />
+  </node>
+
+</launch>

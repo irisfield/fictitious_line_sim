@@ -130,7 +130,7 @@ def image_callback(camera_image):
 
 ################### algorithms ###################
 
-def pub_yaw_rate(cv_image, cx, cy, width, height):
+def pub_yaw_rate(cv_image, cx, cy):
 
     # get the dimensions of the image
     width = cv_image.shape[1]

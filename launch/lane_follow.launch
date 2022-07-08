@@ -16,18 +16,12 @@
   </include>
 
   <!-- launch the yellow line detection node -->
-  <node pkg="fictitious_line_sim" name="detect_yellow" type="detect_yellow.py" required="true" output="screen" >
-      <param name="camera_topic_name" type="str" value="camera_view" />
-  </node>
+  <node pkg="fictitious_line_sim" name="yellow_line" type="yellow_line.py" required="true" output="screen" />
 
   <!-- launch the control unit node -->
-  <node pkg="fictitious_line_sim" name="control_unit" type="control_unit.py" required="true" output="screen" >
-      <param name="camera_topic_name" type="str" value="camera_view" />
-  </node>
+  <node pkg="fictitious_line_sim" name="control_unit" type="control_unit.py" required="true" output="screen" />
 
   <!-- launch the line follow node -->
-  <node pkg="fictitious_line_sim" name="line_follow_shifted" type="line_follow_shifted.py" required="true" output="screen" >
-      <param name="camera_topic_name" type="str" value="camera_view" />
-  </node>
+  <node pkg="fictitious_line_sim" name="line_follow_shifted" type="line_follow_shifted.py" required="true" output="screen" />
 
 </launch>

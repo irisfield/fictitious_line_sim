@@ -68,8 +68,8 @@ def image_callback(camera_image):
         right_line_start_point_x = int(poly_right(right_line_start_point_y))
         right_line_end_point_x = int(poly_right(right_line_end_point_y))
     else:
-        right_line_start_point_x = int(0)
-        right_line_end_point_x = int(0)
+        right_line_start_point_x  = int(width/1)
+        right_line_end_point_x = int(width/2)
 
     # the coordinates for the line (x, y)
     right_lines = [[

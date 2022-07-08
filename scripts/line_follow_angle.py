@@ -40,8 +40,8 @@ def image_callback(camera_image):
     gray_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     canny = cv2.Canny(gray_image, 200, 255)
     ###################################################################################################
-    lines = cv2.HoughLinesP(canny, rho=6, theta=(np.pi / 180),
-                            threshold=15, lines=np.array([]), minLineLength=20, maxLineGap=30)
+    lines = cv2.HoughLinesP(canny, rho=3, theta=(np.pi / 180),
+                            threshold=10, lines=np.array([]), minLineLength=0, maxLineGap=10)
 
     left_line_x = []
     left_line_y = []
@@ -121,8 +121,8 @@ def image_callback(camera_image):
             cx = abs(x2)
             print(f"cx:", cx)
 
-    lines_edges = cv2.addWeighted(cv_image, 0.9, line_image, 1, 0)
-    middle_line_edge = cv2.addWeighted(cv_image, 0.9, copy_image, 1, 0)
+    lines_edges = cv2.addWeighted(cv_image, 0.8, line_image, 1, 0)
+    middle_line_edge = cv2.addWeighted(cv_image, 0.8, copy_image, 1, 0)
 
     ###################################################################################################
 
@@ -148,7 +148,15 @@ def pub_yaw_rate(cv_image, cx):
     camera_center_x = (width / 2)
 
     # compute the difference between the x and y coordinates of the centroid and the vehicle's camera center
+    if cx > 400:
+        cx = 400
+        print(f"cx here is:", cx)
+    elif cx < 40:
+        cx = 40
+        print(f"cx here is:", cx)
+    
     center_error = cx - camera_center_x
+    print(f"center error is:", center_error)
 
     # In simulation:
     #       less than 3.0 - deviates a little inward when turning
@@ -158,6 +166,8 @@ def pub_yaw_rate(cv_image, cx):
 
     # compute the yaw rate proportion to the difference between centroid and camera center
     angular_z = float(center_error / correction)
+    #angular_z = float(0.0025*center_error)
+    print(f"angular z value is:", angular_z)
 
     if cx > camera_center_x:
         # angular.z is negative; left turn

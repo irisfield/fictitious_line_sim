@@ -130,17 +130,11 @@ def image_callback(camera_image):
 
 ################### algorithms ###################
 
-def pub_yaw_rate(cv_image, cx, cy):
-
-<<<<<<< HEAD
-    return
-
 def pub_yaw_rate(cv_image, cx, cy, width, height):
-=======
+
     # get the dimensions of the image
     width = cv_image.shape[1]
     height = cv_image.shape[0]
->>>>>>> shifted_line
 
     # compute the coordinates for the center the vehicle's camera view
     camera_center_y = (height / 2)

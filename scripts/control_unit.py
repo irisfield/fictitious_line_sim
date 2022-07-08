@@ -9,7 +9,6 @@ from fictitious_line_sim.cfg import ControlUnitConfig
 
 # global variables
 vel_msg = Twist()
-yaw_rate = 0.0
 
 # since the car starts at the yellow line, drive the first curve
 drive_curve = True

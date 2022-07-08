@@ -154,6 +154,8 @@ def image_callback(camera_image):
 
 ################### algorithms ###################
 def drive_2_follow_line(cv_image, cx, cols): # algorithm 1
+    global yaw_rate
+
     mid = cols / 2
     print(f'mid:', mid)
     if cx > mid+5:

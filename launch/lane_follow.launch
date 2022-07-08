@@ -2,6 +2,8 @@
 
 <launch>
 
+  <arg name="line_type" default="shifted"/>
+
   <!-- load the map -->
   <param name="map_dir" value="$(find fictitious_line_sim)/map" />
   <rosparam command="load" file="$(find fictitious_line_sim)/map/h_course.yaml" />
@@ -26,7 +28,7 @@
   </node>
 
   <!-- launch the line follow node -->
-  <node pkg="fictitious_line_sim" name="line_follow_shifted" type="line_follow_shifted.py" required="true" output="screen" >
+  <node pkg="fictitious_line_sim" name="line_follow_$(arg line_type)" type="line_follow_$(arg line_type).py" required="true" output="screen" >
       <param name="camera_topic_name" type="str" value="camera_view" />
   </node>
 

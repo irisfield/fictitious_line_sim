@@ -81,8 +81,6 @@ if __name__ == "__main__":
     rospy.Subscriber("/yellow_line_detected", Bool, yellow_line_callback)
     rospy.Subscriber("/yaw_rate", Float32, yaw_rate_callback)
 
-    cmd_vel_pub = rospy.Publisher("/vehicle/cmd_vel", Twist, queue_size=1)
-
     cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
     dynamic_reconfigure_server = Server(ControlUnitConfig, dynamic_reconfigure_callback)

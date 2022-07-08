@@ -126,7 +126,7 @@ def image_callback(camera_image):
     cv2.circle(hough_line_image, (cx, cy), 8, (180, 0, 0), -1)  # -1 fill the circle
 
     # offset the x position of the robot to follow the lane
-    # cx -= 20
+    cx -= 170
 
     pub_yaw_rate(hough_line_image, cx, cy)
 

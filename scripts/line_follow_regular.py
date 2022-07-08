@@ -13,19 +13,11 @@ from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
 from cv_bridge import CvBridge, CvBridgeError
 from dynamic_reconfigure.server import Server
-from fictitious_line_sim.cfg import ControlUnitConfig
 
 # global variables
 yaw_rate = Float32()
 
 ################### callback ###################
-
-def dynamic_reconfigure_callback(config, level):
-    global RC
-    RC = config
-    t_lower = RC.t_lower
-    t_upper = RC.t_upper
-    return config
 
 def image_callback(camera_image):
 
@@ -172,18 +164,8 @@ def image_callback(camera_image):
 
     # draw a circle at centroid (https://www.geeksforgeeks.org/python-opencv-cv2-circle-method)
     cv2.circle(middle_line_edge, (cx, cy), 8, (180, 0, 0), -1)  # -1 fill the circle
-
-    ###################################################################################################
-
-    # get the dimension of the image
-    height, width = cv_image.shape[0], cv_image.shape[1]
-
-    (rows,cols,channels) = cv_image.shape
-
-    # get the dimension of the image
-    drive_2_follow_line(cv_image, cx-10, cy, cols)
-
-    #pub_yaw_rate(cv_image, cx, cy, height, width)
+    
+    pub_yaw_rate(middle_line_edge, cx, cy)
 
     cv2.imshow("CV Image", cv_image)
     cv2.imshow("Hough Lines", lines_edges)
@@ -193,24 +175,12 @@ def image_callback(camera_image):
 
 
 ################### algorithms ###################
-def drive_2_follow_line(cv_image, cx, cy, cols): # algorithm 1
-    mid = cols / 2
-    print(f'mid:', mid)
-    if cx > mid+5:
-      #cv2.putText(cv_image,f"Turn Right", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = -0.1
-    elif cx < mid-5:
-      #cv2.putText(cv_image,f"Turn Left", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = 0.1
-    else:
-      #cv2.putText(cv_image,f"Go Stright", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = 0.0
 
-    yaw_rate_pub.publish(yaw_rate)
+def pub_yaw_rate(cv_image, cx, cy):
 
-    return
-
-def pub_yaw_rate(cv_image, cx, cy, width, height):
+    # get the dimensions of the image
+    width = cv_image.shape[1]
+    height = cv_image.shape[0]
 
     # compute the coordinates for the center the vehicle's camera view
     camera_center_y = (height / 2)
@@ -223,7 +193,7 @@ def pub_yaw_rate(cv_image, cx, cy, width, height):
     #       less than 3.0 - deviates a little inward when turning
     #                 3.0 - follows the line exactly
     #       more than 3.0 - deviates a little outward when turning
-    correction = RC.offset_yaw * camera_center_y
+    correction = 3.0 * camera_center_y
 
     # compute the yaw rate proportion to the difference between centroid and camera center
     angular_z = float(center_error / correction)
@@ -248,7 +218,7 @@ if __name__ == "__main__":
 
     rospy.init_node("follow_line", anonymous=True)
 
-    rospy.Subscriber("/camera/image_raw", Image, image_callback)
+    rospy.Subscriber("/camera_view", Image, image_callback)
 
     #rate = rospy.Rate(10)
     yaw_rate_pub = rospy.Publisher("yaw_rate", Float32, queue_size=1)

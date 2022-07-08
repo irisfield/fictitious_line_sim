@@ -13,17 +13,11 @@ from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
 from cv_bridge import CvBridge, CvBridgeError
 from dynamic_reconfigure.server import Server
-from fictitious_line_sim.cfg import ControlUnitConfig
 
 # global variables
 yaw_rate = Float32()
 
 ################### callback ###################
-
-def dynamic_reconfigure_callback(config, level):
-    global RC
-    RC = config
-    return config
 
 def image_callback(camera_image):
 
@@ -210,7 +204,7 @@ if __name__ == "__main__":
 
     rospy.init_node("follow_line", anonymous=True)
 
-    rospy.Subscriber("/camera/image_raw", Image, image_callback)
+    rospy.Subscriber("/camera_view", Image, image_callback)
 
     #rate = rospy.Rate(10)
     yaw_rate_pub = rospy.Publisher("yaw_rate", Float32, queue_size=1)

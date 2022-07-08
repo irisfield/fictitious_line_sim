@@ -10,9 +10,6 @@ from fictitious_line_sim.cfg import ControlUnitConfig
 # global variables
 vel_msg = Twist()
 
-# since the car starts at the yellow line, drive the first curve
-drive_curve = True
-
 ################### callback ###################
 
 def dynamic_reconfigure_callback(config, level):
@@ -25,17 +22,18 @@ def yaw_rate_callback(angular_z):
     yaw_rate = angular_z.data
     return
 
-def detect_yellow_callback(yellow_detected):
-    global vel_msg, drive_curve
+def yellow_line_callback(yellow_line):
+    global vel_msg
 
     if RC.enable_drive:
-        if yellow_detected.data and not drive_curve:
+        # do not use the yellow_line.data in the simulation
+        if False:
             # drive straight for x seconds up the yellow line
-            # drive_duration(0.5, 0.0, 0.95)
-            drive_curve = True
-        elif not yellow_detected.data and drive_curve:
+            drive_duration(1.0, 0.0, 0.4)
+            # stop the vehicle for 3 seconds
+            drive_duration(0.0, 0.0, 3.0)
             # from the yellow line, drive the curve for x seconds
-            # drive_duration(1.0, 0.123, 2.3)
+            drive_duration(1.0, 0.122, 2.0)
             drive_curve = False
         else:
             # engage the line following algorithm
@@ -80,8 +78,8 @@ def stop_vehicle():
 if __name__ == "__main__":
     rospy.init_node("control_unit", anonymous=True)
 
-    rospy.Subscriber("yellow_detected", Bool, detect_yellow_callback)
-    rospy.Subscriber("yaw_rate", Float32, yaw_rate_callback)
+    rospy.Subscriber("/yellow_line_detected", Bool, yellow_line_callback)
+    rospy.Subscriber("/yaw_rate", Float32, yaw_rate_callback)
 
     cmd_vel_pub = rospy.Publisher("/vehicle/cmd_vel", Twist, queue_size=1)
 

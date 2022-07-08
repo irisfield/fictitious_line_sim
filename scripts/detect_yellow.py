@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     rospy.Subscriber("/camera_view", Image, image_callback)
 
-    yellow_detected_pub = rospy.Publisher("yellow_detected", Bool, queue_size=1)
+    yellow_detected_pub = rospy.Publisher("/yellow_detected", Bool, queue_size=1)
 
     dynamic_reconfigure_server = Server(DetectYellowConfig, dynamic_reconfigure_callback)
 

@@ -37,8 +37,14 @@ def image_callback(camera_image):
     gray_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     canny = cv2.Canny(gray_image, 200, 255)
 
-    lines = cv2.HoughLinesP(canny, rho=6, theta=(np.pi / 180), threshold=15, lines=np.array([]),
-                            minLineLength=20, maxLineGap=30)
+    lines = cv2.HoughLinesP(canny,
+                            rho=1,
+                            theta=(np.pi / 180),
+                            threshold=15,
+                            lines=np.array([]),
+                            minLineLength=5,
+                            maxLineGap=5
+                           )
 
     right_line_x = []
     right_line_y = []
@@ -68,8 +74,8 @@ def image_callback(camera_image):
         right_line_start_point_x = int(poly_right(right_line_start_point_y))
         right_line_end_point_x = int(poly_right(right_line_end_point_y))
     else:
-        right_line_start_point_x = int(0)
-        right_line_end_point_x = int(0)
+        right_line_start_point_x = int(width / 1)
+        right_line_end_point_x = int(width / 1.5)
 
     # the coordinates for the line (x, y)
     right_lines = [[
@@ -83,12 +89,12 @@ def image_callback(camera_image):
     for line in right_lines:
         for x1, y1, x2, y2 in line:
             cv2.line(line_image, (x1, y1), (x2, int(y2)), (255, 0, 0), 10)
-            cv2.line(line_image, (x1 - 170, y1), (x2-170, int(y2)), (0, 0, 255), 10)
+            cv2.line(line_image, (x1, y1), (x2, int(y2)), (0, 0, 255), 10)
 
-    middle_line_edge = cv2.addWeighted(cv_image, 0.8, line_image, 1, 0)
+    hough_line_image = cv2.addWeighted(cv_image, 0.8, line_image, 1, 0)
 
     # convert the image to grayscale
-    hsv_image = cv2.cvtColor(middle_line_edge, cv2.COLOR_BGR2HSV)
+    hsv_image = cv2.cvtColor(hough_line_image, cv2.COLOR_BGR2HSV)
     thresh1 = cv2.inRange(hsv_image,np.array((0, 150, 150)), np.array((20, 255, 255)))
     thresh2 = cv2.inRange(hsv_image,np.array((150, 150, 150)), np.array((180, 255, 255)))
     thresh =  cv2.bitwise_or(thresh1, thresh2)
@@ -114,19 +120,18 @@ def image_callback(camera_image):
             cy = int(M["m01"] / M["m00"])
 
     # draw the obtained contour lines (or the set of coordinates forming a line) on the original image
-    cv2.drawContours(middle_line_edge, max_contour, -1, (0, 255, 0), 10)
+    cv2.drawContours(hough_line_image, max_contour, -1, (0, 255, 0), 10)
 
     # draw a circle at centroid (https://www.geeksforgeeks.org/python-opencv-cv2-circle-method)
-    cv2.circle(middle_line_edge, (cx, cy), 8, (180, 0, 0), -1)  # -1 fill the circle
+    cv2.circle(hough_line_image, (cx, cy), 8, (180, 0, 0), -1)  # -1 fill the circle
 
-    pub_yaw_rate(middle_line_edge, cx, cy)
+    # offset the x position of the robot to follow the lane
+    # cx -= 20
 
-    cv2.imshow("CV Image", cv_image)
-    #cv2.imshow("Hough Lines", lines_edges)
-    cv2.imshow("Middle Hough Lines", middle_line_edge)
+    pub_yaw_rate(hough_line_image, cx, cy)
+
+    cv2.imshow("Hough Line Image", hough_line_image)
     cv2.waitKey(3)
-    #rate.sleep()
-
 
 ################### algorithms ###################
 
@@ -141,13 +146,13 @@ def pub_yaw_rate(cv_image, cx, cy):
     camera_center_x = (width / 2)
 
     # compute the difference between the x and y coordinates of the centroid and the vehicle's camera center
-    center_error = cx - camera_center_x
+    center_error = cx - camera_center_y
 
     # In simulation:
     #       less than 3.0 - deviates a little inward when turning
     #                 3.0 - follows the line exactly
     #       more than 3.0 - deviates a little outward when turning
-    correction = 3.0 * camera_center_y
+    correction = 3.0 * camera_center_x
 
     # compute the yaw rate proportion to the difference between centroid and camera center
     angular_z = float(center_error / correction)
@@ -174,8 +179,7 @@ if __name__ == "__main__":
 
     rospy.Subscriber("/camera_view", Image, image_callback)
 
-    #rate = rospy.Rate(10)
-    yaw_rate_pub = rospy.Publisher("yaw_rate", Float32, queue_size=1)
+    yaw_rate_pub = rospy.Publisher("/yaw_rate", Float32, queue_size=1)
 
     try:
       rospy.spin()

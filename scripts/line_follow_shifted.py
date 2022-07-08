@@ -146,13 +146,13 @@ def pub_yaw_rate(cv_image, cx, cy):
     camera_center_x = (width / 2)
 
     # compute the difference between the x and y coordinates of the centroid and the vehicle's camera center
-    center_error = cx - camera_center_y
+    center_error = cx - camera_center_x
 
     # In simulation:
     #       less than 3.0 - deviates a little inward when turning
     #                 3.0 - follows the line exactly
     #       more than 3.0 - deviates a little outward when turning
-    correction = 3.0 * camera_center_x
+    correction = 2.0 * camera_center_y
 
     # compute the yaw rate proportion to the difference between centroid and camera center
     angular_z = float(center_error / correction)

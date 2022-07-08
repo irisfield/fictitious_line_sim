@@ -27,8 +27,9 @@ def image_callback(camera_image):
     except CvBridgeError:
         print(CvBridgeError)
 
-    width = cv_image.shape[0]
-    height = cv_image.shape[1]
+    # get the dimensions of the image
+    width = cv_image.shape[1]
+    height = cv_image.shape[0]
 
     # resize the image
     cv_image = cv2.resize(cv_image, None, fx=0.7, fy=0.7, interpolation=cv2.INTER_AREA)
@@ -36,59 +37,60 @@ def image_callback(camera_image):
     gray_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     canny = cv2.Canny(gray_image, 200, 255)
 
-    ###################################################################################################
-    lines = cv2.HoughLinesP(canny, rho=6, theta=(np.pi / 180),
-                            threshold=15, lines=np.array([]), minLineLength=20, maxLineGap=30)
+    lines = cv2.HoughLinesP(canny, rho=6, theta=(np.pi / 180), threshold=15, lines=np.array([]),
+                            minLineLength=20, maxLineGap=30)
 
     right_line_x = []
     right_line_y = []
 
+    # take only the right slope
     if lines is not None:
         for line in lines:
             for x1, y1, x2, y2 in line:
                 slope = (y2 - y1) / (x2 - x1)
-            if (math.fabs(slope) < 0.5):
-                continue
+            # positive slope is right
             if slope > 0:
                 right_line_x.extend([x1, x2])
                 right_line_y.extend([y1, y2])
-    else:
-        # print("\n\n LINES IS EMPTY \n\n")
-        pass
 
-    # just below the horizon
-    min_y = cv_image.shape[0] * (3 / 5)
-    # the bottom of the image
-    max_y = cv_image.shape[0]
-    # middle_line_y_start = min_y
-    # middle_line_y_end = max_y
+    # get the dimensions of the image
+    width = cv_image.shape[1]
+    height = cv_image.shape[0]
+
+    # starting end ending point of the line
+    right_line_start_point_y = height
+    right_line_end_point_y = height * (3 / 5)
 
     poly_right = 0
 
     if len(right_line_x) != 0 and len(right_line_y) != 0:
         poly_right = np.poly1d(np.polyfit(right_line_y, right_line_x, deg=1))
-        right_line_x_start = int(poly_right(max_y))
-        right_line_x_end = int(poly_right(min_y))
+        right_line_start_point_x = int(poly_right(right_line_start_point_y))
+        right_line_end_point_x = int(poly_right(right_line_end_point_y))
     else:
-        right_line_x_start = int(0)
-        right_line_x_end = int(0)
+        right_line_start_point_x = int(0)
+        right_line_end_point_x = int(0)
 
-    right_lines= [[ [right_line_x_start, max_y, right_line_x_end, min_y] ]]
+    # the coordinates for the line (x, y)
+    right_lines = [[
+                    [right_line_start_point_x, right_line_start_point_y,
+                    right_line_end_point_x, right_line_end_point_y]
+                  ]]
 
+    # blank image to draw the lines
     line_image = np.copy(cv_image) * 0
 
     for line in right_lines:
         for x1, y1, x2, y2 in line:
             cv2.line(line_image, (x1, y1), (x2, int(y2)), (255, 0, 0), 10)
-            cv2.line(line_image, (x1-170, y1), (x2-170, int(y2)), (0, 0, 255), 10)
+            cv2.line(line_image, (x1 - 170, y1), (x2-170, int(y2)), (0, 0, 255), 10)
 
-    #lines_edges = cv2.addWeighted(cv_image, 0.8, line_image, 1, 0)
     middle_line_edge = cv2.addWeighted(cv_image, 0.8, line_image, 1, 0)
 
     # convert the image to grayscale
-    hsv = cv2.cvtColor(middle_line_edge, cv2.COLOR_BGR2HSV)
-    thresh1 = cv2.inRange(hsv,np.array((0, 150, 150)), np.array((20, 255, 255)))
-    thresh2 = cv2.inRange(hsv,np.array((150, 150, 150)), np.array((180, 255, 255)))
+    hsv_image = cv2.cvtColor(middle_line_edge, cv2.COLOR_BGR2HSV)
+    thresh1 = cv2.inRange(hsv_image,np.array((0, 150, 150)), np.array((20, 255, 255)))
+    thresh2 = cv2.inRange(hsv_image,np.array((150, 150, 150)), np.array((180, 255, 255)))
     thresh =  cv2.bitwise_or(thresh1, thresh2)
 
     # find the contours in the binary image
@@ -110,26 +112,14 @@ def image_callback(camera_image):
             # compute the x and y coordinates of the centroid
             cx = int(M["m10"] / M["m00"])
             cy = int(M["m01"] / M["m00"])
-            print(f'cx:', cx)
-    else:
-        # rospy.loginfo(f"empty contours: {contours}")
-        pass
 
-    try:
-        # draw the obtained contour lines (or the set of coordinates forming a line) on the original image
-        cv2.drawContours(middle_line_edge, max_contour, -1, (0, 255, 0), 10)
-    except UnboundLocalError:
-        rospy.loginfo("max contour not found")
+    # draw the obtained contour lines (or the set of coordinates forming a line) on the original image
+    cv2.drawContours(middle_line_edge, max_contour, -1, (0, 255, 0), 10)
 
     # draw a circle at centroid (https://www.geeksforgeeks.org/python-opencv-cv2-circle-method)
     cv2.circle(middle_line_edge, (cx, cy), 8, (180, 0, 0), -1)  # -1 fill the circle
 
-    ###################################################################################################
-    (rows,cols,channels) = cv_image.shape
-
-    # get the dimension of the image
-    drive_2_follow_line(cv_image, cx-10, cy, cols)
-
+    pub_yaw_rate(middle_line_edge, cx, cy)
 
     cv2.imshow("CV Image", cv_image)
     #cv2.imshow("Hough Lines", lines_edges)
@@ -140,24 +130,17 @@ def image_callback(camera_image):
 
 ################### algorithms ###################
 
-def drive_2_follow_line(cv_image, cx, cy, cols): # algorithm 1
-    mid = cols / 2
-    print(f'mid:', mid)
-    if cx > mid+5:
-      #cv2.putText(cv_image,f"Turn Right", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = -0.1
-    elif cx < mid-5:
-      #cv2.putText(cv_image,f"Turn Left", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = 0.1
-    else:
-      #cv2.putText(cv_image,f"Go Stright", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = 0.0
+def pub_yaw_rate(cv_image, cx, cy):
 
-    yaw_rate_pub.publish(yaw_rate)
-
+<<<<<<< HEAD
     return
 
 def pub_yaw_rate(cv_image, cx, cy, width, height):
+=======
+    # get the dimensions of the image
+    width = cv_image.shape[1]
+    height = cv_image.shape[0]
+>>>>>>> shifted_line
 
     # compute the coordinates for the center the vehicle's camera view
     camera_center_y = (height / 2)

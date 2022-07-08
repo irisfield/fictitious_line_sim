@@ -99,7 +99,7 @@ def image_callback(camera_image):
     if poly_left != 0 and poly_right != 0:
         poly_middle = np.poly1d(np.polyfit(poly_left, poly_right, deg=1))
         middle_line_x_start = int(poly_middle(max_y))
-        middle_line_x_end = int(poly_middle(max_y))
+        middle_line_x_end = int(poly_middle(min_y))
     else:
         middle_line_x_start = int(width/2)
         middle_line_x_end = int(width/3)
@@ -126,18 +126,7 @@ def image_callback(camera_image):
 
     ###################################################################################################
 
-    # get the dimension of the image
-    height, width = cv_image.shape[0], cv_image.shape[1]
-
-    # offset the x position of the vehicle to follow the lane
-    # cx -= 170
-    (rows,cols,channels) = cv_image.shape
-
-    # get the dimension of the image
-    drive_2_follow_line(cv_image, cx-10, cols)
-
-    #pub_yaw_rate(cx, height, width)
-
+    pub_yaw_rate(middle_line_edge, cx)
 
     cv2.imshow("CV Image", cv_image)
     cv2.imshow("Hough Lines", lines_edges)
@@ -147,26 +136,12 @@ def image_callback(camera_image):
 
 
 ################### algorithms ###################
-def drive_2_follow_line(cv_image, cx, cols): # algorithm 1
-    global yaw_rate
 
-    mid = cols / 2
-    print(f'mid:', mid)
-    if cx > mid+5:
-      #cv2.putText(cv_image,f"Turn Right", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = -0.1
-    elif cx < mid-5:
-      #cv2.putText(cv_image,f"Turn Left", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = 0.1
-    else:
-      #cv2.putText(cv_image,f"Go Stright", (10,rows-10), font, 1,(125,125,125),2,cv2.LINE_AA)
-      yaw_rate.data = 0.0
+def pub_yaw_rate(cv_image, cx):
 
-    yaw_rate_pub.publish(yaw_rate)
-
-    return
-
-def pub_yaw_rate(cx, width, height):
+    # get the dimensions of the image
+    width = cv_image.shape[1]
+    height = cv_image.shape[0]
 
     # compute the coordinates for the center the vehicle's camera view
     camera_center_y = (height / 2)
